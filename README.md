@@ -350,7 +350,7 @@ gameObject.ReturnToPool(2f);
 
 
 
-\## 🧩 Notes
+\## 🧩 License rights reserved
 
-
+Copyright © 2025 M.S.T. All rights reserved.
 
