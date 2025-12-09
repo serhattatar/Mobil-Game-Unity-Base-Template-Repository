@@ -1,13 +1,15 @@
+using Cysharp.Threading.Tasks;
 using System;
 using System.Collections.Generic;
+using UI.Core;
 using UnityEngine;
 using UnityEngine.UI;
-using Cysharp.Threading.Tasks;
-using UI.Core;
+using Utilities.DebugSystem;
 
 /// <summary>
 /// Scene-Based UI Manager.
 /// Manages the UI Stack, Blocker, and View Registry for the ACTIVE scene only.
+/// Supports both Generic (Code) and Type-based (Editor) navigation.
 /// </summary>
 [DefaultExecutionOrder(-50)]
 public class UIManager : MonoBehaviour
@@ -83,6 +85,7 @@ public class UIManager : MonoBehaviour
 
     // --- PUBLIC API ---
 
+    // Generic access for gameplay code (Type-Safe)
     public static async void Show<T>(object data = null) where T : UIView
     {
         if (_instance == null)
@@ -90,7 +93,18 @@ public class UIManager : MonoBehaviour
             Debug.LogError("[UIManager] No UIManager found in this scene!");
             return;
         }
-        await _instance.ShowInternal<T>(data);
+        await _instance.ShowInternal(typeof(T), data);
+    }
+
+    // Type-based access for Editor Tools / Reflection
+    public static async void Show(Type type, object data = null)
+    {
+        if (_instance == null)
+        {
+            Debug.LogError("[UIManager] No UIManager found in this scene!");
+            return;
+        }
+        await _instance.ShowInternal(type, data);
     }
 
     public static async void Hide<T>() where T : UIView
@@ -112,10 +126,8 @@ public class UIManager : MonoBehaviour
 
     // --- INTERNAL LOGIC ---
 
-    private async UniTask ShowInternal<T>(object data) where T : UIView
+    private async UniTask ShowInternal(Type type, object data)
     {
-        Type type = typeof(T);
-
         if (!_viewRegistry.TryGetValue(type, out var view))
         {
             Debug.LogError($"[UIManager] View '{type.Name}' is not registered in this scene's UIManager.");
@@ -187,4 +199,35 @@ public class UIManager : MonoBehaviour
             _blocker.gameObject.SetActive(false);
         }
     }
+
+#if DEVELOPMENT_BUILD || UNITY_EDITOR
+    public List<UIView> GetAllViews()
+    {
+        return _sceneViews;
+    }
+
+    [DebugCommand("Open UI Inspector", "Tools")]
+    private static void Debug_OpenInspector()
+    {
+        if (_instance == null) return;
+
+        // Check if overlay already exists
+        var existing = FindFirstObjectByType<UIDebugOverlay>();
+        if (existing != null)
+        {
+            Destroy(existing.gameObject);
+            return;
+        }
+
+        // Create a temporary object for the overlay
+        GameObject go = new GameObject("[UI_DEBUG_OVERLAY]");
+        var overlay = go.AddComponent<UIDebugOverlay>();
+
+        // Feed data
+        overlay.Initialize(_instance._sceneViews);
+
+        Debug.Log("[UIManager] UI Inspector Opened.");
+    }
+
+#endif
 }

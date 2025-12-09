@@ -1,6 +1,7 @@
 #if DEVELOPMENT_BUILD || UNITY_EDITOR
 
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 using Utilities.DebugSystem;
@@ -44,7 +45,7 @@ namespace Utilities.DebugSystem
                 btn.gameObject.SetActive(true);
 
                 // Setup Text
-                Text btnText = btn.GetComponentInChildren<Text>();
+                TextMeshPro btnText = btn.GetComponentInChildren<TextMeshPro>();
                 if (btnText != null) btnText.text = $"[{cmd.Category}] {cmd.Name}";
 
                 // Setup Click Event (Closure capture)
