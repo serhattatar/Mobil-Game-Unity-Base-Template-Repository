@@ -3,7 +3,8 @@ using System.IO;
 using Newtonsoft.Json;
 using System.Text;
 using System.Collections.Generic;
-using Utilities.DebugSystem;
+using Utilities.BossMode;
+
 
 #if UNITY_EDITOR
 using UnityEditor;
@@ -83,7 +84,7 @@ public class SaveManager : MonoBehaviour
     }
 
     // --- INTERNAL LOGIC ---
-
+    [BossControl("System/SaveInternal")]
     private void SaveInternal()
     {
         if (_localData == null) _localData = new PlayerProfile();
@@ -95,9 +96,6 @@ public class SaveManager : MonoBehaviour
         try
         {
             File.WriteAllText(_filePath, json);
-#if UNITY_EDITOR
-            // Debug.Log("[SaveManager] Game Saved."); 
-#endif
         }
         catch (System.Exception e)
         {
@@ -128,13 +126,13 @@ public class SaveManager : MonoBehaviour
             CreateNewSave();
         }
     }
-
+    [BossControl("System/CreateNewSave")]
     private void CreateNewSave()
     {
         _localData = new PlayerProfile();
         SaveInternal();
     }
-
+    [BossControl("System/DeleteSaveInternal")]
     private void DeleteSaveInternal()
     {
         if (File.Exists(_filePath)) File.Delete(_filePath);
@@ -151,27 +149,6 @@ public class SaveManager : MonoBehaviour
         }
         return modified.ToString();
     }
-
-    // --- DEBUG COMMANDS ---
-#if DEVELOPMENT_BUILD || UNITY_EDITOR
-    [DebugCommand("Add 1000 Coins", "Economy")]
-    private static void Cheat_AddMoney()
-    {
-        if (Data != null)
-        {
-            Data.Coins += 1000;
-            Save();
-            Debug.Log("Cheat: Added 1000 coins.");
-        }
-    }
-
-    [DebugCommand("Reset Data", "System")]
-    private static void Cheat_Reset()
-    {
-        DeleteSave();
-        UnityEngine.SceneManagement.SceneManager.LoadScene(0);
-    }
-#endif
 }
 
 #if UNITY_EDITOR

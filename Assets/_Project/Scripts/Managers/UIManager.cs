@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using UI.Core;
 using UnityEngine;
 using UnityEngine.UI;
-using Utilities.DebugSystem;
 
 /// <summary>
 /// Scene-Based UI Manager.
@@ -200,34 +199,5 @@ public class UIManager : MonoBehaviour
         }
     }
 
-#if DEVELOPMENT_BUILD || UNITY_EDITOR
-    public List<UIView> GetAllViews()
-    {
-        return _sceneViews;
-    }
 
-    [DebugCommand("Open UI Inspector", "Tools")]
-    private static void Debug_OpenInspector()
-    {
-        if (_instance == null) return;
-
-        // Check if overlay already exists
-        var existing = FindFirstObjectByType<UIDebugOverlay>();
-        if (existing != null)
-        {
-            Destroy(existing.gameObject);
-            return;
-        }
-
-        // Create a temporary object for the overlay
-        GameObject go = new GameObject("[UI_DEBUG_OVERLAY]");
-        var overlay = go.AddComponent<UIDebugOverlay>();
-
-        // Feed data
-        overlay.Initialize(_instance._sceneViews);
-
-        Debug.Log("[UIManager] UI Inspector Opened.");
-    }
-
-#endif
 }

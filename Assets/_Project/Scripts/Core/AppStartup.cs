@@ -22,9 +22,6 @@ public class AppStartup : MonoBehaviour
     [Tooltip("Drag the AudioManager prefab here.")]
     [SerializeField] private GameObject _audioManagerPrefab;
 
-    [Header("Debug (Development Only)")]
-    [Tooltip("Drag the DebugCanvas prefab here. Will only be created in Development Builds or Editor.")]
-    [SerializeField] private GameObject _debugCanvasPrefab;
 
     private async void Start()
     {
@@ -55,18 +52,7 @@ public class AppStartup : MonoBehaviour
             CreateManager(_poolManagerPrefab, "PoolManager");
 
         if (Object.FindFirstObjectByType<AudioManager>() == null)
-            CreateManager(_audioManagerPrefab, "AudioManager");
-
-        // --- Debug System (Conditional) ---
-        // This block is completely stripped out in Release builds for security and performance
-#if DEVELOPMENT_BUILD || UNITY_EDITOR
-        if (_debugCanvasPrefab != null && Object.FindFirstObjectByType<Utilities.DebugSystem.DebugUI>() == null)
-        {
-            var debugObj = Instantiate(_debugCanvasPrefab);
-            DontDestroyOnLoad(debugObj);
-            Debug.Log("[AppStartup] Debug System Initialized (Development Mode).");
-        }
-#endif
+            CreateManager(_audioManagerPrefab, "AudioManager");           
 
         // Wait a frame to ensure all managers' Awake() methods have finished execution
         await UniTask.Yield();
