@@ -1,12 +1,16 @@
+﻿/* ==================================================================================
+ * 🚀 APP STARTUP (BOOTSTRAPPER)
+ * ==================================================================================
+ * Author:        Muhammet Serhat Tatar (M.S.T.)
+ * Description:   Entry point of the application. Initializes all core services.
+ * ==================================================================================
+ */
+
 using UnityEngine;
 using Cysharp.Threading.Tasks;
 using UnityEngine.SceneManagement;
-using Utilities;
+using Utilities; 
 
-/// <summary>
-/// The entry point of the application. Placed in the Bootstrap scene.
-/// It initializes core services (Save, Audio, Pool, Debug) and loads the main Game Scene.
-/// </summary>
 public class AppStartup : MonoBehaviour
 {
     [Header("Scene Configuration")]
@@ -14,37 +18,39 @@ public class AppStartup : MonoBehaviour
     [SerializeField] private string _gameSceneName = "GameScene";
 
     [Header("System Prefabs")]
-    [Tooltip("Drag the PoolManager prefab (with configured pools) here.")]
+    [Tooltip("PoolManager with configured pools.")]
     [SerializeField] private GameObject _poolManagerPrefab;
 
-    [Tooltip("Drag the SaveManager prefab here.")]
+    [Tooltip("SaveManager prefab.")]
     [SerializeField] private GameObject _saveManagerPrefab;
 
-    [Tooltip("Drag the AudioManager prefab here.")]
+    [Tooltip("AudioManager prefab.")]
     [SerializeField] private GameObject _audioManagerPrefab;
 
+    [Tooltip("InputManager prefab.")]
+    [SerializeField] private GameObject _inputManagerPrefab; 
 
     private async void Start()
     {
         // 1. Setup Application Settings
         Application.targetFrameRate = 60;
-        Screen.sleepTimeout = SleepTimeout.NeverSleep; // Prevent screen dimming
+        Screen.sleepTimeout = SleepTimeout.NeverSleep;
 
-        // 2. Initialize Systems (Order is important)
+        // 2. Initialize Systems
         await InitializeServices();
 
-        // 3. Fake Loading Delay (Optional: useful for showing splash screen logos)
+        // 3. Fake Loading Delay (Optional)
         await UniTask.Delay(1000);
 
         // 4. Load the Main Game
-        GameLogger.Log($"[AppStartup] Loading scene: {_gameSceneName}");
+        GameLogger.System($"[AppStartup] Loading scene: {_gameSceneName}");
         SceneManager.LoadScene(_gameSceneName);
     }
 
     private async UniTask InitializeServices()
     {
         // --- Core Managers ---
-        // We use FindFirstObjectByType (Unity 6+) for better performance than FindObjectOfType
+        // Using FindFirstObjectByType (Unity 6+) for performance
 
         if (Object.FindFirstObjectByType<SaveManager>() == null)
             CreateManager(_saveManagerPrefab, "SaveManager");
@@ -53,12 +59,15 @@ public class AppStartup : MonoBehaviour
             CreateManager(_poolManagerPrefab, "PoolManager");
 
         if (Object.FindFirstObjectByType<AudioManager>() == null)
-            CreateManager(_audioManagerPrefab, "AudioManager");           
+            CreateManager(_audioManagerPrefab, "AudioManager");
 
-        // Wait a frame to ensure all managers' Awake() methods have finished execution
+        if (Object.FindFirstObjectByType<InputManager>() == null)
+            CreateManager(_inputManagerPrefab, "InputManager"); 
+
+        // Wait a frame to ensure all Awake() methods are finished
         await UniTask.Yield();
 
-        GameLogger.Log("<color=green>[AppStartup] All Services Initialized Successfully.</color>");
+        GameLogger.Success("[AppStartup] All Services Initialized Successfully.");
     }
 
     private void CreateManager(GameObject prefab, string defaultName)
@@ -68,19 +77,19 @@ public class AppStartup : MonoBehaviour
         if (prefab != null)
         {
             obj = Instantiate(prefab);
-            // Remove "(Clone)" from the name for cleaner hierarchy
-            obj.name = prefab.name;
+            obj.name = prefab.name; // Clean name
         }
         else
         {
-            // Fallback: Auto-create from code if no prefab is assigned
+            // Fallback: Create from code
             obj = new GameObject(defaultName);
 
             if (defaultName == "SaveManager") obj.AddComponent<SaveManager>();
             else if (defaultName == "PoolManager") obj.AddComponent<PoolManager>();
             else if (defaultName == "AudioManager") obj.AddComponent<AudioManager>();
+            else if (defaultName == "InputManager") obj.AddComponent<InputManager>(); 
 
-            GameLogger.Warning($"[AppStartup] {defaultName} created from code (No Prefab assigned). Settings might be default.");
+            GameLogger.Warning($"[AppStartup] {defaultName} created without Prefab. Using defaults.");
         }
 
         DontDestroyOnLoad(obj);

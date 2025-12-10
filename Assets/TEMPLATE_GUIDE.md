@@ -1,218 +1,208 @@
-# 📘 M.S.T. UNITY BASE TEMPLATE
+📘 M.S.T. UNITY BASE TEMPLATE
+Master Documentation (README)
+Author: Muhammet Serhat Tatar (M.S.T.) Unity Version: 6000.0.x (Unity 6) Architecture: Service-Based Wrappers, Clean Architecture, Scene-Based UI
 
-### **Master Documentation (README)**
+📖 1. ARCHITECTURE OVERVIEW
+This template enforces a strict Bootstrap Pattern.
 
----
+🔄 Lifecycle
+Bootstrap Scene (Index 0)
 
-Author: **Muhammet Serhat Tatar (M.S.T.)**
-Unity Version: **6000.0.x (Unity 6)**
-Architecture: **Service-Based Wrappers (No Public Singletons), Clean Architecture**
+The game must start here.
 
----
+Contains the AppStartup script.
 
-# 📖 1. ARCHITECTURE OVERVIEW
+Service Initialization AppStartup instantiates persistent managers as DontDestroyOnLoad:
 
-This template enforces a strict **Bootstrap Pattern**.
+PoolManager
 
-## 🔄 Lifecycle
+SaveManager
 
-1. **Bootstrap Scene (Index 0)**
+AudioManager
 
-   * The game **must** start here.
-   * Contains the `AppStartup` script.
+InputManager (New)
 
-2. **Service Initialization**
-   `AppStartup` instantiates persistent managers as **DontDestroyOnLoad**:
+Game Load Once all services are ready, the GameScene loads automatically.
 
-   * PoolManager
-   * SaveManager
-   * AudioManager
+⚠️ RULE: Never place Manager scripts manually inside gameplay scenes. They are injected via AppStartup.
 
-3. **Game Load**
-   Once all services are ready, the **GameScene** loads automatically.
+🎱 2. OBJECT POOLING SYSTEM
+A zero-allocation pooling wrapper built on UnityEngine.Pool.
 
-⚠️ **RULE:** Never place Manager scripts manually inside the GameScene. They are injected via `AppStartup`.
+⚙️ Configuration
+Navigate to _Project/Prefabs/Managers.
 
----
+Select PoolManager_Prefab.
 
-# 🎱 2. OBJECT POOLING SYSTEM
+Add your prefab types to the Initial Pools list.
 
-A zero-allocation pooling wrapper built on `UnityEngine.Pool`.
+Adjust Prewarm Count to pre-instantiate objects.
 
-## ⚙️ Configuration
+🚀 Usage API
+C#
 
-1. Navigate to **_Project/Prefabs/Managers**
-2. Select **PoolManager_Prefab**
-3. Add your prefab types (Bullets, Enemies, etc.) to the **Initial Pools** list
-4. Adjust **Prewarm Count** to pre-instantiate objects during loading
+// Spawn
+_bulletPrefab.Spawn(transform.position, rotation);
 
-## 🚀 Spawning Objects
+// Despawn (Extension Method)
+gameObject.ReturnToPool(3f); // Auto-return after 3s
+💾 3. SAVE & LOAD SYSTEM
+Secure persistence layer using JSON serialization + XOR encryption.
 
-Use `.Spawn()` instead of `Instantiate()`:
+⭐ Features
+Auto-Save on OnApplicationPause and Quit.
 
-```csharp
-[SerializeField] private GameObject _bulletPrefab;
+Encryption enabled by default.
 
-public void Fire()
-{
-    _bulletPrefab.Spawn(transform.position, transform.rotation);
-}
-```
+🧩 Usage API
+C#
 
-## 🔄 Despawning Objects
-
-Objects manage their own lifecycle:
-
-```csharp
-private void OnEnable()
-{
-    gameObject.ReturnToPool(3f); // auto-despawn after 3 seconds
-}
-
-private void OnCollisionEnter(Collision col)
-{
-    gameObject.ReturnToPool(); // instant return
-}
-```
-
----
-
-# 💾 3. SAVE & LOAD SYSTEM
-
-Secure persistence layer using **JSON serialization + XOR encryption**.
-
-## ⭐ Features
-
-* **Auto-Save** on `OnApplicationPause` and `OnApplicationQuit`
-* **Encryption** enabled by default (configurable in SaveManager Inspector)
-
-## 🧩 Usage API
-
-```csharp
-// Read data
+// Read
 int coins = SaveManager.Data.Coins;
 
-// Modify data
+// Write
 SaveManager.Data.Coins += 100;
-SaveManager.Data.UnlockedItems.Add("Shotgun");
+SaveManager.Save(); // Manual save
+🔊 4. AUDIO SYSTEM
+Handles music & SFX with pitch variation support.
 
-// Manual save (optional)
-SaveManager.Save();
+🎧 Usage API
+C#
 
-// Reset save
-SaveManager.DeleteSave();
-```
+AudioManager.PlayMusic(_bgMusic);
+AudioManager.PlaySFX(_shootClip, volume: 1f, randomPitch: true);
+🎮 5. INPUT SYSTEM (MOBILE & EDITOR)
+A unified, static API for Touch, Joystick, and Swipe controls.
 
----
+⚙️ Setup
+Add InputManager_Prefab to AppStartup.
 
-# 🔊 4. AUDIO SYSTEM
+For on-screen joystick: Add the VirtualJoystick script to your UI Image.
 
-Handles music & SFX with optional pitch variation.
+🕹️ Usage API (Static)
+C#
 
-## 🎧 Usage API
-
-```csharp
-[SerializeField] private AudioClip _shootSfx;
-[SerializeField] private AudioClip _bgMusic;
-
-void Start()
+void Update()
 {
-    AudioManager.PlayMusic(_bgMusic);
-}
+    // 1. Joystick Vector
+    Vector3 move = new Vector3(InputManager.JoystickInput.x, 0, InputManager.JoystickInput.y);
 
-void Attack()
-{
-    AudioManager.PlaySFX(_shootSfx); // random pitch
-    AudioManager.PlaySFX(_shootSfx, volume: 1f, randomPitch: false); // fixed pitch
-}
-```
-
----
-
-# 🛠️ 5. DEBUG SYSTEM (REFLECTION-BASED)
-
-A powerful mobile-friendly developer console.
-Debug code is automatically stripped from Release builds.
-
-## 🔓 Access Controls
-
-* **Editor:** Press `F1`
-* **Mobile:** Tap with **3 fingers**
-
-## 🎮 Creating Cheats
-
-Add `[DebugCommand]` to any **static** method:
-
-```csharp
-using Utilities.DebugSystem;
-
-public class GameCheats
-{
-    [DebugCommand("Add 1000 Gold", "Economy")]
-    public static void Cheat_AddGold()
+    // 2. Touch Detection
+    if (InputManager.IsTouching)
     {
-        SaveManager.Data.Coins += 1000;
-        Debug.Log("Cheat Applied!");
+        Vector2 pos = InputManager.TouchPosition;
     }
 }
-```
 
----
+// 3. Events
+void Start()
+{
+    InputManager.OnTap += Jump;
+    InputManager.OnSwipe += HandleSwipe; // Returns Vector2 direction
+}
+🖥️ 6. UI SYSTEM (SCENE-BASED)
+A type-safe, scene-local UI architecture. UI elements are destroyed when the scene unloads to save memory.
 
-# 📦 6. INSTALLATION & SETUP
+⚙️ Setup
+Create a Canvas in your Level scene.
 
-1. Clone the repository
-2. Open with Unity 6 (6000.0.x)
-3. Open scene: **_Project/Scenes/Bootstrap**
-4. Select the **AppStartup** object
-5. Ensure all manager prefab references are correctly assigned
-6. To enable Debug Menu → **Development Build** must be checked
+Add UIManager script to it.
 
----
+Assign your Popup Prefabs to the "Scene Views" list in Inspector.
 
-# 📝 7. FOLDER STRUCTURE RULES
+🧩 Usage API
+C#
 
-* **_Project/** → All custom assets, scripts, prefabs
-* **ThirdParty/** → Imported packages (do not modify)
-* **Resources/** → Avoid using unless absolutely required (increases memory usage)
+// Show a Popup
+UIManager.Show<SettingsPopup>();
 
+// Show with Data (Payload)
+UIManager.Show<WinPopup>(new WinData { Score = 100 });
 
-# 👑 10. Boss Mode (Debug Console)
+// Hide
+UIManager.Hide<SettingsPopup>();
+📢 7. GAME LOGGER (CONDITIONAL)
+A performance-oriented wrapper for Debug.Log. All calls are automatically stripped from Release Builds.
 
-A zero-setup, mobile-friendly development console generated entirely via code. It creates a runtime UI to view logs, tweak variables, and execute methods without needing inspector access.
+📝 Usage API
+C#
 
-### 🔹 Features
-* **Sticky Header & Auto-Scroll:** Console behaves like Unity Editor.
-* **Smart Alert Icon:** Flashes Red (Error) or Yellow (Warning) during gameplay.
-* **Live Editing:** Tweak values in real-time.
-* **Performance:** Uses TextMeshPro and strips completely from Release builds.
+// Standard
+GameLogger.Log("Game Started");
 
-### 🔹 Setup
-No setup required. The system initializes automatically.
-**Requirement:** Ensure `TextMeshPro Essentials` are imported in the project.
+// Categorized (Colored)
+GameLogger.Combat("Player took 10 damage"); // Magenta
+GameLogger.Network("Connected to server");  // Cyan
+GameLogger.UI("Popup Opened");              // Orange
 
-### 🔹 How to Use
-Add the `[BossControl]` attribute to any field, property, or method.
+// Warning/Error
+GameLogger.Warning("Low Ammo");
+GameLogger.Error("Null Reference Detected");
+👑 8. BOSS MODE (DEBUG CONSOLE)
+A powerful, zero-setup developer console generated at runtime.
 
-```csharp
+🔹 Access
+Trigger: Triple-tap the semi-transparent "DEV" icon (Top-Right).
+
+Alerts: Icon flashes Yellow (Warning) or Red (Error) during gameplay.
+
+🔹 Features
+Console: Real-time logs with collapse, filter, and sticky header features.
+
+Inspector: Live variable tweaking and method execution.
+
+Economy: Dedicated tab for game balancing.
+
+🔹 Usage (Attributes)
+Add [BossControl] to any field, property, or method.
+
+C#
+
 using Utilities.BossMode;
 
 public class PlayerController : MonoBehaviour
 {
-    // 1. Tweakable Variable
-    [BossControl("Player/Move Speed")]
+    // Tweakable Variable (Live Update)
+    [BossControl("Player/Speed")]
     public float MoveSpeed = 5f;
 
-    // 2. Action Button
+    // Action Button
     [BossControl("Cheats/Kill All")]
-    private void KillAllEnemies() { ... }
+    private void KillAll() { ... }
 
-    // 3. Economy Tab
-    [BossControl("Economy/Gold Drop", true)]
-    public static int GoldDrop = 100;
+    // Economy Tab
+    [BossControl("Economy/Gold", true)]
+    public static int Gold = 100;
 }
-🔹 Access
-Trigger: Triple-tap the semi-transparent "DEV" icon in the top-right corner.
+🛠️ 9. EDITOR TOOLS
+Custom tools to speed up workflow.
 
-Clear: Press "CLEAR" in the Logs tab to reset logs and the alert icon.
+🔹 Scene Switcher (Overlay)
+Located in the Scene View Toolbar.
 
+Allows instant switching between scenes.
+
+Play Mode Lock: Prevents accidental scene changes while playing.
+
+🔹 Force Bootstrapper
+Menu: Tools > M.S.T. > Enable Auto-Bootstrap.
+
+Forces the editor to always start from Scene 0 (Bootstrap), ensuring Managers are initialized even if you press Play in "Level 3".
+
+📦 10. INSTALLATION & FOLDERS
+Open _Project/Scenes/Bootstrap.
+
+Check AppStartup inspector references.
+
+Ensure TextMeshPro Essentials are imported.
+
+📂 Folder Structure Rules
+_Project/: All custom assets.
+
+_Project/Scripts/Core: AppStartup, Bootstrapper.
+
+_Project/Scripts/Managers: Singleton Managers (Pool, Save, Input).
+
+_Project/Scripts/Utilities: Helpers, BossMode, Logger.
+
+ThirdParty/: Imported assets (Do not modify).
