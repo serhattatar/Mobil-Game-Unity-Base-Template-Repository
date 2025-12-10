@@ -1,5 +1,7 @@
 using UnityEngine;
 using DG.Tweening; // DOTween is recommended for cross-fading music (Optional but better)
+using Utilities;
+
 
 #if UNITY_EDITOR
 using UnityEditor;
@@ -155,7 +157,7 @@ public class AudioManagerEditor : Editor
             EditorGUILayout.Space(10);
             if (GUILayout.Button("Test SFX (Random Pitch)"))
             {
-                Debug.Log("Playing Test Sound (Needs AudioClip in script to work fully)");
+                GameLogger.Log("Playing Test Sound (Needs AudioClip in script to work fully)");
                 // In a real scenario, you'd need a reference clip here to test
             }
         }

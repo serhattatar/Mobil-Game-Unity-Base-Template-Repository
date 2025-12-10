@@ -58,7 +58,7 @@ namespace Utilities.Editor
             {
                 // If disabled, reset the start scene (Unity uses currently open scene)
                 EditorSceneManager.playModeStartScene = null;
-                Debug.Log($"<color=yellow>[ForceBootstrapper]</color> Disabled. Game will start from current scene.");
+                GameLogger.Log($"<color=yellow>[ForceBootstrapper]</color> Disabled. Game will start from current scene.");
                 return;
             }
 
@@ -73,11 +73,11 @@ namespace Utilities.Editor
             {
                 // Force Unity to start from the Bootstrap scene
                 EditorSceneManager.playModeStartScene = bootstrapScene;
-                Debug.Log($"<color=cyan>[ForceBootstrapper]</color> Active. Play Mode forced to: <b>{bootstrapScene.name}</b>");
+                GameLogger.Log($"<color=cyan>[ForceBootstrapper]</color> Active. Play Mode forced to: <b>{bootstrapScene.name}</b>");
             }
             else
             {
-                Debug.LogError("[ForceBootstrapper] Scene at Build Index 0 not found! Please check File > Build Settings.");
+                GameLogger.Error("[ForceBootstrapper] Scene at Build Index 0 not found! Please check File > Build Settings.");
             }
         }
     }

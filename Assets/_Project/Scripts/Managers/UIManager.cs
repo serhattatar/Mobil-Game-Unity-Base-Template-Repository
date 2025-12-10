@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using UI.Core;
 using UnityEngine;
 using UnityEngine.UI;
+using Utilities;
 
 /// <summary>
 /// Scene-Based UI Manager.
@@ -89,7 +90,7 @@ public class UIManager : MonoBehaviour
     {
         if (_instance == null)
         {
-            Debug.LogError("[UIManager] No UIManager found in this scene!");
+            GameLogger.Error("[UIManager] No UIManager found in this scene!");
             return;
         }
         await _instance.ShowInternal(typeof(T), data);
@@ -100,7 +101,7 @@ public class UIManager : MonoBehaviour
     {
         if (_instance == null)
         {
-            Debug.LogError("[UIManager] No UIManager found in this scene!");
+            GameLogger.Error("[UIManager] No UIManager found in this scene!");
             return;
         }
         await _instance.ShowInternal(type, data);
@@ -129,7 +130,7 @@ public class UIManager : MonoBehaviour
     {
         if (!_viewRegistry.TryGetValue(type, out var view))
         {
-            Debug.LogError($"[UIManager] View '{type.Name}' is not registered in this scene's UIManager.");
+            GameLogger.Error($"[UIManager] View '{type.Name}' is not registered in this scene's UIManager.");
             return;
         }
 

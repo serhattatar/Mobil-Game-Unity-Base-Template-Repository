@@ -177,3 +177,42 @@ public class GameCheats
 * **Resources/** → Avoid using unless absolutely required (increases memory usage)
 
 
+# 👑 10. Boss Mode (Debug Console)
+
+A zero-setup, mobile-friendly development console generated entirely via code. It creates a runtime UI to view logs, tweak variables, and execute methods without needing inspector access.
+
+### 🔹 Features
+* **Sticky Header & Auto-Scroll:** Console behaves like Unity Editor.
+* **Smart Alert Icon:** Flashes Red (Error) or Yellow (Warning) during gameplay.
+* **Live Editing:** Tweak values in real-time.
+* **Performance:** Uses TextMeshPro and strips completely from Release builds.
+
+### 🔹 Setup
+No setup required. The system initializes automatically.
+**Requirement:** Ensure `TextMeshPro Essentials` are imported in the project.
+
+### 🔹 How to Use
+Add the `[BossControl]` attribute to any field, property, or method.
+
+```csharp
+using Utilities.BossMode;
+
+public class PlayerController : MonoBehaviour
+{
+    // 1. Tweakable Variable
+    [BossControl("Player/Move Speed")]
+    public float MoveSpeed = 5f;
+
+    // 2. Action Button
+    [BossControl("Cheats/Kill All")]
+    private void KillAllEnemies() { ... }
+
+    // 3. Economy Tab
+    [BossControl("Economy/Gold Drop", true)]
+    public static int GoldDrop = 100;
+}
+🔹 Access
+Trigger: Triple-tap the semi-transparent "DEV" icon in the top-right corner.
+
+Clear: Press "CLEAR" in the Logs tab to reset logs and the alert icon.
+

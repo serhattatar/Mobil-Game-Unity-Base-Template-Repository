@@ -1,6 +1,7 @@
 using UnityEngine;
 using Cysharp.Threading.Tasks;
 using UnityEngine.SceneManagement;
+using Utilities;
 
 /// <summary>
 /// The entry point of the application. Placed in the Bootstrap scene.
@@ -36,7 +37,7 @@ public class AppStartup : MonoBehaviour
         await UniTask.Delay(1000);
 
         // 4. Load the Main Game
-        Debug.Log($"[AppStartup] Loading scene: {_gameSceneName}");
+        GameLogger.Log($"[AppStartup] Loading scene: {_gameSceneName}");
         SceneManager.LoadScene(_gameSceneName);
     }
 
@@ -57,7 +58,7 @@ public class AppStartup : MonoBehaviour
         // Wait a frame to ensure all managers' Awake() methods have finished execution
         await UniTask.Yield();
 
-        Debug.Log("<color=green>[AppStartup] All Services Initialized Successfully.</color>");
+        GameLogger.Log("<color=green>[AppStartup] All Services Initialized Successfully.</color>");
     }
 
     private void CreateManager(GameObject prefab, string defaultName)
@@ -79,7 +80,7 @@ public class AppStartup : MonoBehaviour
             else if (defaultName == "PoolManager") obj.AddComponent<PoolManager>();
             else if (defaultName == "AudioManager") obj.AddComponent<AudioManager>();
 
-            Debug.LogWarning($"[AppStartup] {defaultName} created from code (No Prefab assigned). Settings might be default.");
+            GameLogger.Warning($"[AppStartup] {defaultName} created from code (No Prefab assigned). Settings might be default.");
         }
 
         DontDestroyOnLoad(obj);

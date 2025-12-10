@@ -1,7 +1,8 @@
-using UnityEngine;
-using UnityEditor;
-using System.IO;
 using System.Collections.Generic;
+using System.IO;
+using UnityEditor;
+using UnityEngine;
+using Utilities;
 
 /// <summary>
 /// Editor tool to generate a standard folder structure for professional projects.
@@ -45,6 +46,6 @@ public class ProjectSetupTool
         }
 
         AssetDatabase.Refresh();
-        Debug.Log("<color=green>Project Structure Generated Successfully!</color>");
+        GameLogger.Success("Project Structure Generated Successfully!");
     }
 }

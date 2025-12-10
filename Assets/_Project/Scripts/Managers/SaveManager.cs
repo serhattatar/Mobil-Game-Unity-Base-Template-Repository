@@ -4,6 +4,8 @@ using Newtonsoft.Json;
 using System.Text;
 using System.Collections.Generic;
 using Utilities.BossMode;
+using Utilities;
+
 
 
 #if UNITY_EDITOR
@@ -46,7 +48,7 @@ public class SaveManager : MonoBehaviour
         {
             if (_instance == null)
             {
-                Debug.LogError("[SaveManager] Service not initialized!");
+                GameLogger.Error("[SaveManager] Service not initialized!");
                 return null;
             }
             return _instance._localData;
@@ -99,7 +101,7 @@ public class SaveManager : MonoBehaviour
         }
         catch (System.Exception e)
         {
-            Debug.LogError($"[SaveManager] Failed to save: {e.Message}");
+            GameLogger.Error($"[SaveManager] Failed to save: {e.Message}");
         }
     }
 
@@ -113,11 +115,11 @@ public class SaveManager : MonoBehaviour
                 if (_useEncryption) content = EncryptDecrypt(content);
 
                 _localData = JsonConvert.DeserializeObject<PlayerProfile>(content);
-                Debug.Log($"[SaveManager] Data Loaded. Coins: {_localData.Coins}");
+                GameLogger.Log($"[SaveManager] Data Loaded. Coins: {_localData.Coins}");
             }
             catch (System.Exception e)
             {
-                Debug.LogWarning($"[SaveManager] Corrupted save ({e.Message}). Creating new.");
+                GameLogger.Warning($"[SaveManager] Corrupted save ({e.Message}). Creating new.");
                 CreateNewSave();
             }
         }
@@ -136,7 +138,7 @@ public class SaveManager : MonoBehaviour
     private void DeleteSaveInternal()
     {
         if (File.Exists(_filePath)) File.Delete(_filePath);
-        Debug.Log("[SaveManager] Save file deleted.");
+        GameLogger.Log("[SaveManager] Save file deleted.");
         CreateNewSave();
     }
 

@@ -3,6 +3,8 @@ using UnityEngine;
 using UnityEngine.Pool;
 using Core.Pooling;
 using Cysharp.Threading.Tasks;
+using Utilities;
+
 
 #if UNITY_EDITOR
 using UnityEditor;
@@ -65,7 +67,7 @@ public class PoolManager : MonoBehaviour
     {
         if (_instance == null)
         {
-            Debug.LogError("[PoolManager] System is not initialized! Add PoolManager to the scene.");
+            GameLogger.Error("[PoolManager] System is not initialized! Add PoolManager to the scene.");
             return null;
         }
         return _instance.SpawnInternal(prefab, position, rotation, parent);
